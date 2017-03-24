@@ -1,0 +1,17 @@
+{
+ "type" : "repeat",
+ "period" : "2",
+ "count" : "2",
+ "actions" :
+  [
+   {
+    "id" : "DeltaDoreDriver_1_3",
+    "type":"set-value",
+	"value":"close"
+   },
+   {
+    "id" : "DeltaDoreDriver_0_1",
+    "type" : "toggle-value"
+   }
+  ]
+}

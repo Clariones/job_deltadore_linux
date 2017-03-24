@@ -1,0 +1,18 @@
+{
+	"moduleId":"DeltaDoreDriver",
+	"manufacturer": "Delta Dore",
+	"webCommandPort": 1800,
+	"deviceName":"/dev/ttyUSB0",
+	"deviceConfigs":[
+		{
+			"id":"DeltaDoreDriver_0_0",
+			"name":"大象",
+			"region":"动物园",
+			"iconName":"light.ico"
+		},{
+			"id":"DeltaDoreDriver_0_1",
+			"name":"长颈鹿",
+			"region":"动物园"
+		}	
+	]
+}

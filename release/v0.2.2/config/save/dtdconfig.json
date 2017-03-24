@@ -1,0 +1,6 @@
+{
+	"moduleId":"DeltaDoreDriver",
+	"manufacturer": "Delta Dore",
+	"webCommandPort": 1800,
+	"deviceName":"/dev/ttyUSB0"
+}

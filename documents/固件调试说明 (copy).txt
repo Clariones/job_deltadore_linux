@@ -1,0 +1,27 @@
+目前给的是调试版本，不是最终稳定版本，配置文件路径也是临时调试用的，不是最终发布的（此版本不包含霍尼设备对接）
+
+
+调试环境搭建步骤：
+1.ssh登录到主机，登录用户root，密码password
+2.创建配置文件：/etc/luoping/save/modules_config.xml，内容如下，name为自己模块的名称，filepath为模块so文件地址
+<?xml version="1.0" encoding="utf-8" ?>
+<modules>
+        <module name="hdy">
+                <filepath>/usr/bin/libModuleSample.so</filepath>
+        </module>
+</modules>
+3.把模块so文件拷贝到主机，路径为配置文件中的filepath路径
+4.命令行运行/etc/init.d/smarthome stop停止主控进程
+5.命令行运行/usr/bin/HomeControlCenter开启主控进程即可
+6.对模块执行添加设备需要用tcp客户端，发送如下命令，各个字段之前发送的文档中有解释：
+<write><config><object id="hdy_124B000220FB723412" server="hdy" name="test_shade" type="Shade" cluster="8" region="keting" icon="" subtype="0" manufacturer="dataiduo" model="DTD102"/></config></write>\04
+删除设备发送如下命令：
+<write><config><object id="hdy_124B000220FB723412" delete="true" server="hdy"/></config></write>\04
+7.添加成功之后可以通过影子管家App（在App Store下载影子管家）进行控制
+
+
+备注：SDK等版本最终调试完成之后会发给你们，华安固件版本之后也会给你们，中间调试版本就不编译发了。开发文档有更新，加个了字段，之前群里也有说过
+
+2016-12-21
+2./etc/init.d/smarthome stop如果没有停止主控进程，则继续执行命令killall -9 HomeControlCenter杀掉这个进程
+

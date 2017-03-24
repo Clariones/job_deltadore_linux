@@ -1,0 +1,44 @@
+原始的git路径是https://git.coding.net/Clariones/deltadore_router.git， 里面内容比较杂，包括一些做实验的代码片段，都可以忽略不计。
+主要的内容都在 release 目录下， documents 目录是和速凡接口使用的一些相关文件。
+
+先说一下整体的情况：
+1. 有两个C的工程，一个生成 libdeltadore.so, 供管理模块加载，一个生成cmdClient, 供本地web命名脚本调用。
+2. 在 release 目录下的各个版本中都有readme文件，里面有详细的部署说明。
+3. 参考部署说明，可以看到所有需要的文件，其中：
+	3.1 libdeltadore.so 由 src\Linux_Gateway 工程编译得来
+	3.2 CmdClient 由 src\UdpClient_test 工程编译得来
+	其他文件都是文本文件，直接在release包中。
+
+CmdClient的情况：
+	这个最早是使用UDP的，后来因为需要同步的字段增加了一些，设备数量也比较多，最后最大包超出了1500字节，所以后来改成了TCP的，但是工程名称一直就保持UdpClient 了。
+	这个小程序的功能很简单，通过fdti_driver.sh接收到页面的请求后，会将请求的字符串直接转发给libdeltadore.so所建立的TCP连接，然后再将响应转给fdti_driver.sh就完了（通过打印到屏幕的方式），本身没有任何命令解析的参与。
+	整个通讯的格式是JSON格式。
+
+libdeltadore.so的情况：
+	这个是主要的功能实现所在，包括：
+	1. 接受管理模块的生命周期管理，接收和发送消息。 这部分代码在目录src\Linux_Gateway\mngModule中。
+		主要的代码是MangementModule，实现命令的处理，状态的轮询等。
+		主要有4个线程：
+			1-消息接收线程。 接收上位机的消息。源头是 DtdMngService::onRequest（）.
+			2-设备命令处理线程。 消息收到后不会直接处理，而是分析完成后，变成达泰多的设备命令，放入这个线程后处理。
+			3-定时轮询线程。
+			4-webUI命令的侦听线程。
+		Helper 主要是做JSON的序列化和反序列化
+		生命周期的调用次序是在文件DeltaDoreServer.cpp中的：DeltaDoreDriver_load() -> DeltaDoreDriver_init() -> DeltaDoreDriver_start() -> DeltaDoreDriver_stop() -> DeltaDoreDriver_deinit()
+
+	2. 处理WebUI上的命令。 这部分代码在目录 Linux_Gateway\udpclt
+		主要的入口是在UdpCmdManager， 然后是一个命令一个 Handler，比较简单
+
+	3. 设备驱动
+		原有的deltadore文件包括了很多目录，我们的封装主要在 src\Linux_Gateway\driver
+		这里有个DataMap，现在已经改成CJSON了，所以不用了。
+
+	其他目录基本都是deltadore的驱动代码了，有几个目录是测试用的，包括SF_ModBridge， stub, test等目录。 他们都不在Makefile中。
+	目录下有两个main文件：main.cpp 和 TestStart.cpp, 都是用于在本地环境下临时验证或者做单元测试用的，也不在Makefile中。
+	程序的真正的启动入口，就是DeltaDoreServer.cpp的几个函数。
+
+Makefile
+	每个工程的Makefile都是用于路由器的，本地编译的话需要修改一下编译参数。
+	有个定义： PUBLISH_FOLDER = /space/jobs/FDTI_Linux/git/deltadore_router/CppPrjoects/mpis
+	是用来拷贝编译结果方便打包成zip，然后发送的，可以根据自己的需要更改。
+	

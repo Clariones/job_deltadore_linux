@@ -1,0 +1,7 @@
+{
+	"id":"DeltaDoreDriver_1_3",
+	"type":"cycle-on-off",
+	"count":"3",
+	"delay_on":"3",
+	"delay_off":"3"
+}

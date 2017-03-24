@@ -1,0 +1,14 @@
+{
+	"Method":"Object.Update",
+	"Param":{
+		"id":"driver_0_0", 
+		"type":"Shade",
+		"subtype":"",
+		"enabled":"true",
+		"name":"吊灯",
+		"region":"客厅",
+		"icon":"onofflight_icon.png",
+		"manufacturer":"xxx",
+		"model":"ligh1"
+	}
+}

@@ -1,0 +1,148 @@
+#ifndef DELTADOREDEVICEINFO_H
+#define DELTADOREDEVICEINFO_H
+
+#include "control/ResponseStatus.h"
+#include "rollershutter/RollerShutterActuatorType.h"
+#include "light/LightActuatorType.h"
+
+#include "mngModule/Helper.h"
+
+#define MAX_NAME_LENGTH 60
+
+using namespace deltadoreX2d;
+
+class DeltaDoreDeviceInfo
+{
+    public:
+        DeltaDoreDeviceInfo();
+        virtual ~DeltaDoreDeviceInfo();
+
+    public:
+        static const int DEVICE_TYPE_UNKNOWN = 0;
+        static const int DEVICE_TYPE_LIGHT = 1;
+        static const int DEVICE_TYPE_ROLLER_SHUTTER = 2;
+        static const int DEVICE_TYPE_TEMPERATURE_SENSOR = 3;
+
+
+    public:
+        int getDeviceType() { return m_deviceType;}
+        void setDeviceType(int dType) {m_deviceType=dType;}
+
+        ResponseStatus getLastResponseStatus() {return ResponseStatus::valueOf(m_lstResponseStatus);}
+        void setLastResponseStatus(const ResponseStatus& status) { m_lstResponseStatus = status.toInt();}
+
+        bool isFavoritePosition() {return m_favoritePosition;}
+        void setFavoritePosition(bool value) { m_favoritePosition=value;}
+
+        bool isIntrusionDetected() {return m_intrusionDetected;};
+        void setIntrusionDetected(bool value) { m_intrusionDetected=value;}
+
+        bool isLoweringFaulty() {return m_loweringFaulty;}
+        void setLoweringFaulty(bool value) { m_loweringFaulty=value;}
+
+        bool isObstacleFaulty() {return m_obstacleFaulty;}
+        void setObstacleFaulty(bool value) { m_obstacleFaulty=value;}
+
+        bool isOverheatingFaulty() {return m_overheatingFaulty;}
+        void setOverheatingFaulty(bool value) { m_overheatingFaulty=value;}
+
+        bool isRaisingFaulty() {return m_raisingFaulty;}
+        void setRaisingFaulty(bool value) { m_raisingFaulty=value;}
+
+        int getLevel() {return m_level;}
+        void setLevel(int value) {m_level = value;}
+
+        int getPosition() {return m_position;}
+        void setPosition(int value) {m_position = value;}
+
+        void setOverloadFaulty(bool value) { m_isOverloadFaulty=value;}
+        bool isOverloadFaulty() { return m_isOverloadFaulty;}
+
+        void setCommandFaulty(bool value) { m_isCommandFaulty=value;}
+        bool isCommandFaulty() { return m_isCommandFaulty;}
+
+        void setPresenceDetected(bool value) { m_isPresenceDetected=value;}
+        bool isPresenceDetected() { return m_isPresenceDetected;}
+
+        void setTwilight(bool value) { m_isTwilight=value;}
+        bool isTwilight() { return m_isTwilight;}
+
+        void setChannelCount(int value) { m_channelCount = value;}
+        int getChannelCount() {return m_channelCount;}
+
+        RollerShutterActuatorType getRollerShutterActuatorType() {
+            if (m_rollerShutterActuatorType > 2 || m_rollerShutterActuatorType < 0){
+                m_rollerShutterActuatorType = 0;
+            }
+            return RollerShutterActuatorType::valueOf(m_rollerShutterActuatorType);
+            }
+        void setRollerShutterActuatorType(const RollerShutterActuatorType& atype) { m_rollerShutterActuatorType = atype.toInt();}
+
+        LightActuatorType getLightActuatorType() {
+            if (m_lightActuatorType > 2 || m_lightActuatorType < 0){
+                m_lightActuatorType = 0;
+            }
+            return LightActuatorType::valueOf(m_lightActuatorType);
+            }
+        void setLightActuatorType(const LightActuatorType& atype) { m_lightActuatorType = atype.toInt();}
+
+        void setMulticolor(bool value) { m_isMulticolor=value;}
+        bool isMulticolor() { return m_isMulticolor;}
+
+        void setColorRed(int value) { m_colorRed=value;}
+        int getColorRed() { return m_colorRed;}
+
+        void setColorBlue(int value) { m_colorBlue=value;}
+        int getColorBlue() { return m_colorBlue;}
+
+        void setColorGreen(int value) { m_colorGreen=value;}
+        int getColorGreen() { return m_colorGreen;}
+
+        const char* getName() { return m_name;}
+        void setName(const char* name) { strncpy(m_name, name, MAX_NAME_LENGTH);}
+        const char* getRegion() { return m_region;}
+        void setRegion(const char* region) { strncpy(m_region, region, MAX_NAME_LENGTH);}
+
+        void setNextRefreshTs(TIME_TS newTs) { nextRefreshTs=newTs;}
+        TIME_TS getNextRefreshTs() { return nextRefreshTs;}
+
+        void setOnLine(bool online) { m_onLine = online;}
+        bool getOnLine() { return m_onLine;}
+    protected:
+        int m_deviceType;
+        int m_lstResponseStatus;
+
+        bool m_favoritePosition;
+        bool m_intrusionDetected;
+        bool m_loweringFaulty;
+        bool m_obstacleFaulty;
+        bool m_overheatingFaulty;
+        bool m_raisingFaulty;
+        int m_level;
+        int m_position;
+
+        int m_channelCount;
+        int m_rollerShutterActuatorType;
+
+        bool m_isOverloadFaulty;
+        bool m_isCommandFaulty;
+        bool m_isPresenceDetected;
+        bool m_isTwilight;
+
+        bool m_isMulticolor;
+        int m_lightActuatorType;
+
+        int m_colorRed;
+        int m_colorBlue;
+        int m_colorGreen;
+
+        char m_name[MAX_NAME_LENGTH+1];
+        char m_region[MAX_NAME_LENGTH+1];
+
+        bool m_onLine;
+
+        TIME_TS nextRefreshTs;
+    private:
+};
+
+#endif // DELTADOREDEVICEINFO_H

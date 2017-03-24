@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<modules>
+        <module name="DeltaDoreDriver">
+                <filepath>/usr/bin/libdeltadore.so</filepath>
+        </module>
+</modules>

@@ -1,0 +1,19 @@
+[{
+		"id":	"DeltaDoreDriver_0_0",
+		"type":	"Shade",
+		"name":	"",
+		"region":	"",
+		"icon":	"",
+		"cluster":	"8",
+		"network":	0,
+		"node":	0
+	}, {
+		"id":	"DeltaDoreDriver_2_0",
+		"type":	"DimmableLight",
+		"name":	"",
+		"region":	"",
+		"icon":	"",
+		"cluster":	"8",
+		"network":	2,
+		"node":	0
+	}]

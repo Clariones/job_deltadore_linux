@@ -1,0 +1,97 @@
+1. 初始化按照文档，定义常量如下：
+	- 模块名称：DeltaDoreDriver （15个字符,camel命名）
+   所以需要实现以下方法：
+	BaseModule* DeltaDoreDriver_load(void)
+	int DeltaDoreDriver_init(void)
+	int DeltaDoreDriver_start(void)
+	void DeltaDoreDriver_stop(void);
+	void DeltaDoreDriver_deinit(void);
+   问题：
+	1. DeltaDoreDriver_init 声明为没有参数，而不是 DeltaDoreDriver_init(unsigned char) 是否可以？
+		如果需要这个flag，那么这个flag的参数含义是什么？
+	2. DeltaDoreDriver_deinit 是干什么的？在模块的生命周期中做什么用？
+		从列出的函数名字来看，我猜测生命周期是这样：
+		load->init->start->deinit->stop
+		然后deinit后可能会直接回到init，即 start->deinit->init-start 这样循环下去。这样可以在模块发生异常时，重启模块，对否？如果不对，是怎样的？
+
+   在init中负责加载配置参数。
+  	目前deltadore需要加载3个配置参数：设备名称（/tty/USB0)，和WebUI通讯的端口号（默认1800），以及设备名称保存文件（默认/root/devicenames.txt)
+	其他参数也可以在配置文件中添加，例如：
+	模块ID(例如DeltaDoreDriver), 设备制造商ID（例如0x1234)，轮询周期等需要在达泰多网关模块中用到的参数
+	
+	然后初始化deltador设备，首先轮询已注册的拓扑结构，初始化设备状态表，初始化设备和网络名称。
+
+   在start中启动任务
+	deltadore内部的定时轮询线程（轮询设备状态）
+	UDP命令接收线程（接收UI上发来的命令）
+	后面还要加上达泰多网关需要的线程，例如延时关灯，需要一个计时器线程（以及必要的信号量）。
+	然后是注册和订阅。
+
+2. 订阅的消息
+	/action/execute： 执行动作通知
+		设备ID的格式为<模块ID>_<网络号>_<设备号>。 模块ID是配置参数。网络号和设备号是达泰多设备需要的参数。
+			例如模块ID为DeltaDoreDriver, 在节点 network=0，node=0上的设备ID就是 DeltaDoreDriver_0_0
+			对上位机来说，就是一个字符串，对驱动来说，会解析出network和node id来查找到对应的设备
+		type支持 set-value; toggle-value; delay-off; set-keyvalue
+			不支持 set-enable
+			灯光设备支持set-value; toggle-value; delay-off;
+			窗帘设备支持set-keyvalue
+   使用的主控程序服务：
+	ObjectList.Reg：注册设备列表
+		模块启动后，会初始化内部存储的设备列表，并和设备通讯获得当前状态，然后调用这个接口注册设备. 
+		由驱动程序调用SubServicesManager.publishMessage()来执行。
+		id：如上<模块ID>_<网络号>_<设备号>
+		type：可能的类型是0x0101, DimmableLight,灯光设备
+				  0x0200，Shade，窗帘设备
+				  0x00A1，TempHumCollector，温度传感器
+		subtype：无
+		enabled：总是 true
+		region：network ID，例如"0",或者"1". 
+		icon：无
+		manufacturer：deltadore的ID，通过配置文件配置的某个固定值
+		model：可能值：“light”，“rollershutter”，"temperaturesensor"
+		server: 模块ID，例如DeltaDoreDriver
+	ObjectList.UnRegAll：注销所有设备列表
+		不会主动调用，只在deinit方法中等待调用
+		server：模块ID，例如DeltaDoreDriver
+	Object.UnReg：设备注销
+		当手工删除（从UI界面）一个设备时，驱动会调用SubServicesManager.publishMessage()来告知设备删除
+		id：如前：<模块ID>_<网络号>_<设备号>
+	Object.Reg：注册设备
+		当手工添加一个设备（从UI界面）时，驱动会调用SubServicesManager.publishMessage()来告知设备删除
+		所有参数和ObjectList.Reg相同
+
+   对外提供的服务：
+	Object.Delete：从主控删除设备
+		id：注册时上报的ID值。驱动会从中分析出network和node id，执行命令
+	
+	Object.Update： 添加设备
+		使用参数 id
+		忽略所有其他参数
+		达泰多设备添加设备必须手工操作，所以这个命令不建议从主控下发。
+		如果执行，必须遵照达泰多设备操作流程：
+			首先在需要添加的设备上，按键3秒，进入对码模式
+			然后在5秒内下发这个命令
+			设备自动进行对码，大约10秒左右
+			然后驱动收到响应的设备注册消息后，发送若干zigbee查询，查询设备类型
+			得到设备类型后，返回成功。
+			然后调用Object.Reg消息，更新设备信息。
+		可以看到这个命令直接从主控下发，并不一定能得到期望的结果，所以建议不要从主控下发这个命令。
+3. 不订阅的消息
+	/object/state： 设备状态通知
+		这个消息，达泰多驱动是只发布，不订阅
+		在每次设备操作命令完成后，会发布这个消息，以及轮询温度传感器也会发送这个消息
+		id：如前：<模块ID>_<网络号>_<设备号>
+		enabled：总是 true
+		value：可能值：on off stop close open 0～255 （对应 0～100%）16.0～31.0 （对应温度传感器）
+		battery：总是256
+		LQI：总是50，表示适中。 达泰多设备状态信息中，没有信号强度参数。
+	/system/guard：系统布撤防状态通知
+		达泰多没有安防设备，不订阅此消息
+	/system/emergency：紧急报警通知
+		达泰多设备不订阅报警相关消息
+	/rule/execute：执行规则通知
+		达泰多设备没有规则功能
+	/system/config：进入配置模式
+		达泰多设备需要手工操作，没有远程配置模式功能
+
