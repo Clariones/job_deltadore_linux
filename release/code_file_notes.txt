@@ -1,0 +1,31 @@
+在目录“release/v0.2.2_rss/src/Linux_Gateway” 下为主应用源代码，其中：
+SDK的代码包括：
+diagnostic
+driver
+hvac
+light
+metering
+remote
+requirement.cpp
+requirement.h
+rollershutter
+security
+sensor
+
+其余是对接管理接口和测试等功能所需的代码，包括：
+主控制部分,面向设备的命令执行：
+    control
+    main.cpp
+和上位管理模块通信的部分：
+    mngModule
+    SF_ModBridge
+这些是PC上调试用的：
+    TestStart.cpp
+    stub
+    test
+    testinput
+这个是PC上调试发命令用的：
+    udpclt
+工具类：
+    utils
+    common
